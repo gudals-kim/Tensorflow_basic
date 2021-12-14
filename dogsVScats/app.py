@@ -38,7 +38,13 @@ val_ds = val_ds.map(전처리함수)
 
 
 model = tf.keras.Sequential([
-    tf.keras.layers.Conv2D(32,(3,3),padding="same",activation='relu', input_shape=(64,64,3)),#칼라사진이면 마지막에 3(rgb가 들어감)
+    
+    tf.keras.layers.experimental.preprocessing.RandomFlip('horizontal',input_shape=(64,64,3)),
+    tf.keras.layers.experimental.preprocessing.RandomRotation(0.1),
+    tf.keras.layers.experimental.preprocessing.RandomZoom(0.1),
+    
+    
+    tf.keras.layers.Conv2D(32,(3,3),padding="same",activation='relu'),#칼라사진이면 마지막에 3(rgb가 들어감)
     tf.keras.layers.MaxPooling2D( (2,2) ),
     tf.keras.layers.Conv2D(64,(3,3),padding="same",activation='relu'),
     tf.keras.layers.MaxPooling2D( (2,2) ),
@@ -51,7 +57,21 @@ model = tf.keras.Sequential([
     tf.keras.layers.Dense(1, activation="sigmoid")
 ])
 
+
+콜백함수 = tf.keras.callbacks.ModelCheckpoint(
+    filepath='dogsVScats\Checkpoint\mnist',
+    monitor = 'val_acc',
+    mode='max',
+    save_weights_only=True,
+    save_freq='epoch'
+    
+)
+
+
+
 model.summary()
 
 model.compile(loss="binary_crossentropy", optimizer="adam", metrics=['accuracy'])
-model.fit(train_ds,validation_data=val_ds, epochs=5)
+model.fit(train_ds,validation_data=val_ds, epochs=100, callbacks=[콜백함수])
+
+model.save('dogsVScats\모델\model1')
